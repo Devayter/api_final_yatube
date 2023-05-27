@@ -1,15 +1,13 @@
-from django_filters.rest_framework import DjangoFilterBackend
+from api.permissions import IsUserOrAuthorOrReadOnly
+from api.serializers import (CommentSerializer, FollowSerializer,
+                             GroupSerializer, PostSerializer)
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from posts.models import Follow, Group, Post, User
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
-
-from api.permissions import IsUserOrAuthorOrReadOnly
-from api.serializers import (
-    CommentSerializer, FollowSerializer, GroupSerializer, PostSerializer
-)
-from posts.models import Follow, Group, Post, User
 
 
 class CommentViewSet(viewsets.ModelViewSet):
