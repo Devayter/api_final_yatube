@@ -38,13 +38,6 @@ class LightFollowViewSet(CreateListViewSet):
             user=self.request.user
         )
 
-    # без этого метода все валится с ошибкой
-    # NOT NULL constraint failed: posts_follow.user_id, никакие действия
-    # c сериализатором не помогают, в теории мы так переопределяли данный
-    # метод, чтобы корректно по-умолчанию сохранялся текущий user
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
