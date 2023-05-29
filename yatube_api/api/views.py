@@ -1,13 +1,15 @@
-from api.permissions import IsUserOrAuthorOrReadOnly
-from api.serializers import (CommentSerializer, FollowSerializer,
-                             GroupSerializer, PostSerializer)
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from posts.models import Follow, Group, Post, User
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
+
+from api.mixins import CreateListViewSet
+from api.permissions import IsUserOrAuthorOrReadOnly
+from api.serializers import (CommentSerializer, FollowSerializer,
+                             GroupSerializer, PostSerializer)
+from posts.models import Follow, Group, Post
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -24,7 +26,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, post=self.get_post())
 
 
-class FollowViewSet(viewsets.ModelViewSet):
+class LightFollowViewSet(CreateListViewSet):
     serializer_class = FollowSerializer
     permission_classes = (IsAuthenticated,)
     filter_backends = (DjangoFilterBackend, SearchFilter)
@@ -32,15 +34,16 @@ class FollowViewSet(viewsets.ModelViewSet):
     search_fields = ('following__username',)
 
     def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        following_username = self.request.data.get('following')
-        following_user = User.objects.get(username=following_username)
-        serializer.save(
-            user=self.request.user,
-            following=following_user
+        return Follow.objects.select_related('following').all().filter(
+            user=self.request.user
         )
+
+    # без этого метода все валится с ошибкой
+    # NOT NULL constraint failed: posts_follow.user_id, никакие действия
+    # c сериализатором не помогают, в теории мы так переопределяли данный
+    # метод, чтобы корректно по-умолчанию сохранялся текущий user
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):

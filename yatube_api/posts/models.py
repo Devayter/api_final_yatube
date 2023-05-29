@@ -20,6 +20,10 @@ class Comment(models.Model):
         db_index=True
     )
 
+    class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'комментарии'
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
@@ -40,12 +44,18 @@ class Follow(models.Model):
                 name='unique_user_following'
             )
         ]
+        verbose_name = 'подписка'
+        verbose_name_plural = 'подписки'
 
 
 class Group(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     description = models.TextField()
+
+    class Meta:
+        verbose_name = 'группа'
+        verbose_name_plural = 'группы'
 
     def __str__(self):
         return self.title
@@ -65,6 +75,11 @@ class Post(models.Model):
         null=True
     )
     image = models.ImageField(upload_to='posts/', null=True, blank=True)
+
+    class Meta:
+        ordering = ('pub_date',)
+        verbose_name = 'пост'
+        verbose_name_plural = 'посты'
 
     def __str__(self):
         return self.text
